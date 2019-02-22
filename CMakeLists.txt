@@ -9,9 +9,11 @@ HunterGate(
 
 project(poco-hunter-example)
 
+hunter_add_package(OpenSSL)
 hunter_add_package(PocoCpp)
 
-find_package(Poco REQUIRED Foundation)
+find_package(OpenSSL REQUIRED)
+find_package(Poco REQUIRED Foundation Crypto)
 
 add_executable(phe "main.cpp")
-target_link_libraries(phe Poco::Foundation)
+target_link_libraries(phe Poco::Foundation Poco::Crypto OpenSSL::Crypto)
