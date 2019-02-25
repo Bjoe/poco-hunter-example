@@ -1,26 +1,40 @@
 
 #include "Poco/Base64Encoder.h"
+#include "Poco/StreamCopier.h"
 #include "Poco/Crypto/DigestEngine.h"
 
+#include <cstdint>
 #include <string>
 #include <sstream>
 #include <iostream>
 
-int main(int argc, char** argv)
+int main(int, char** argv)
 {
-
   std::istringstream istr(argv[1], std::ios::binary);
-  std::string outstring;
-  std::ostringstream ostr(outstring);
 
-  Poco::Crypto::DigestEngine engine("SHA256");
+  Poco::Crypto::DigestEngine engine{"SHA256"};
   engine.update(istr.str());
   const Poco::DigestEngine::Digest& digest = engine.digest();
 
-  Poco::Base64Encoder encoder(ostr);
+  std::string hexDigest = Poco::Crypto::DigestEngine::digestToHex(digest);
+  std::cout << hexDigest << '\n';
 
-  encoder << Poco::Crypto::DigestEngine::digestToHex(digest);
-
+  // ---------------------------------------------------------------------------
+  std::ostringstream ostr{};
+  Poco::Base64Encoder encoder{ostr};
+  for(const std::uint8_t byte : digest)
+  {
+    encoder << byte;
+  }
+  encoder.close();
   std::cout << ostr.str() << '\n';
+
+  // ---------------------------------------------------------------------------
+  std::ostringstream ostr2{};
+  Poco::Base64Encoder encoder2{ostr2, Poco::BASE64_URL_ENCODING};
+  encoder2 << hexDigest;
+  encoder2.close();
+  std::cout << ostr2.str() << '\n';
+
   return 0;
 }
